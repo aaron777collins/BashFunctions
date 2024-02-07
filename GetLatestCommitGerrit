@@ -1,6 +1,6 @@
-# Gets your latest commits and lets you check them out (someone else wrote this mostly but I made it a bit better)
+# Gets your latest commits and lets you check them out (someone else wrote this mostly)
 function GetLatestCommit() {
-    # Set your Gerrit username and Gerrit server URL
+     # Set your Gerrit username and Gerrit server URL
     GERRIT_USERNAME="firstInit.lastName" # CHANGE ME
     GERRIT_SERVER="GERRIT SERVER WITH HTTPS" # CHANGE ME
     GERRIT_SERVER_NO_HTTPS="GERRIT SERVER NO HTTPS IN NAME" # CHANGE ME
@@ -32,7 +32,15 @@ function GetLatestCommit() {
         BRANCH_NAME="feature/$(date +%Y%m%d%H%M%S)"
     fi
 
-    # Create and checkout a new branch with the extracted ticket number
-    echo "Creating and checking out new branch: ${BRANCH_NAME}"
-    git checkout -b "${BRANCH_NAME}" FETCH_HEAD
+    # Check if the branch already exists
+    if git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+        echo "Branch $BRANCH_NAME already exists. Checking out and rebasing with the fetched changes."
+        git checkout "$BRANCH_NAME"
+        # Rebasing the current branch on top of the fetched changes
+        git rebase FETCH_HEAD
+    else
+        # Create and checkout a new branch with the extracted ticket number
+        echo "Creating and checking out new branch: ${BRANCH_NAME}"
+        git checkout -b "${BRANCH_NAME}" FETCH_HEAD
+    fi
 }
