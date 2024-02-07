@@ -1,0 +1,7 @@
+# Lets you cd into any repos that are in sub-folders (be careful not to use this in your C drive or somewhere massive) (relies on fzf)
+function cdrepo() {
+    local repo=$(find . -type d -name ".git" | sed 's|/\.git$||' | fzf --height 70% --reverse)
+    if [[ -n "$repo" ]]; then
+        cd "$repo" || return
+    fi
+}
