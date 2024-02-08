@@ -1,1 +1,3 @@
 if [ -f ~/.bashscripts ]; then . ~/.bashscripts; fi
+alias repo="cd /mnt/c/repos" # optional
+alias gs="git status" # optional

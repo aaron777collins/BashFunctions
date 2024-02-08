@@ -12,3 +12,9 @@ nvim() {
     # Attach to the 'nvim' session
     tmux attach-session -t nvim
 }
+
+# simply uses nvim with fzf to open files (add to scripts so its synced)
+nvimfzf() {
+    local file
+    file=$(fzf --height 70% --reverse) && nvim "$file"
+}

@@ -53,6 +53,7 @@ nvim() {
 }
 
 alias gs="git status"
+# alias repo="cd /c/repos" # optional
 
 # Leave at bottom (.bashscripts is synced with wsl)
 if [ -f ~/.bashscripts ]; then . ~/.bashscripts; fi
