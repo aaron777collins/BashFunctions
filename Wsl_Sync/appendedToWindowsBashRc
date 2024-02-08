@@ -1,0 +1,2 @@
+# Leave at bottom (.bashscripts at ~/.bashrc is synced with wsl)
+if [ -f ~/.bashscripts ]; then . ~/.bashscripts; fi

@@ -1,0 +1,5 @@
+# Use fzf to search through your history and execute the command you select
+rhistory() {
+    local cmd
+    cmd=$(history | awk '{$1=""; print substr($0,2)}' | fzf +s --tac) && eval "$cmd"
+}

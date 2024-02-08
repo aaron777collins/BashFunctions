@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Define source and destination directories
+SOURCE_DIR="/mnt/c/Users/aaron" # Change this to your Windows username
+DEST_DIR="$HOME"
+
+# Define backup directory with timestamp
+TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+BACKUP_DIR="$HOME/backup-$TIMESTAMP"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
+
+# List of files to copy
+FILES_TO_COPY=(".bashscripts")
+
+# Loop through the files and handle them
+for file in "${FILES_TO_COPY[@]}"; do
+    # Check if the file exists in the destination
+    if [ -f "$DEST_DIR/$file" ]; then
+        # Make a backup of the existing file
+        echo "Backing up $DEST_DIR/$file to $BACKUP_DIR"
+        cp "$DEST_DIR/$file" "$BACKUP_DIR/"
+    fi
+
+    # Copy the file from source to destination
+    echo "Copying $SOURCE_DIR/$file to $DEST_DIR"
+    cp "$SOURCE_DIR/$file" "$DEST_DIR/"
+
+    # Convert line endings from Windows to Unix/Linux
+    echo "Converting line endings for $DEST_DIR/$file"
+    sed -i 's/\r$//' "$DEST_DIR/$file"
+done
+
+echo "Operation completed."
