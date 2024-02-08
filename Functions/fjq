@@ -6,3 +6,12 @@ function fjq() {
 function fjqwindow() {
     echo '' | fzf-tmux --print-query --preview "cat ${1} | jq {q}" --preview-window=right:60%
 }
+
+# Use fzf to dynamically search for a key in a JSON file and print the value
+function fjqurl() {
+    echo '' | fzf-tmux -p '80%' --print-query --preview "cat <(curl ${1}) | jq {q}" --preview-window=right:60%
+}
+# Use fzf to dynamically search for a key in a JSON file and print the value (as tmux window)
+function fjqurlwindow() {
+    echo '' | fzf-tmux --print-query --preview "cat <(curl ${1}) | jq {q}" --preview-window=right:60%
+}
