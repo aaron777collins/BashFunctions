@@ -7,11 +7,28 @@ function fjqwindow() {
     echo '' | fzf-tmux --print-query --preview "cat ${1} | jq {q}" --preview-window=right:60%
 }
 
-# Use fzf to dynamically search for a key in a JSON file and print the value
+# Use fzf to dynamically search for a key in a JSON file stored locally after fetching it once, and print the value
 function fjqurl() {
-    echo '' | fzf-tmux -p '80%' --print-query --preview "cat <(curl ${1}) | jq {q}" --preview-window=right:60%
+    # Fetch data and store in a temporary file
+    local temp_json=$(mktemp)
+    curl -s "${1}" > "$temp_json"
+    
+    # Use fzf to search through the local copy of the JSON
+    echo '' | fzf-tmux -p '80%' --print-query --preview "jq {q} < '$temp_json'" --preview-window=right:60%
+    
+    # Clean up the temporary file
+    rm "$temp_json"
 }
-# Use fzf to dynamically search for a key in a JSON file and print the value (as tmux window)
+
+# Use fzf to dynamically search for a key in a JSON file stored locally after fetching it once, and print the value (as tmux window)
 function fjqurlwindow() {
-    echo '' | fzf-tmux --print-query --preview "cat <(curl ${1}) | jq {q}" --preview-window=right:60%
+    # Fetch data and store in a temporary file
+    local temp_json=$(mktemp)
+    curl -s "${1}" > "$temp_json"
+    
+    # Use fzf to search through the local copy of the JSON
+    echo '' | fzf-tmux --print-query --preview "jq {q} < '$temp_json'" --preview-window=right:60%
+    
+    # Clean up the temporary file
+    rm "$temp_json"
 }
