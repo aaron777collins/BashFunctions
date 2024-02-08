@@ -1,0 +1,14 @@
+# Works with the tmux plugin OR the tmux function in .bashrc
+# Opens nvim in a tmux session named 'nvim'
+nvim() {
+    # Check if a tmux session named 'nvim' exists, if not, create it.
+    if ! tmux has-session -t nvim 2>/dev/null; then
+        tmux new-session -d -s nvim
+    fi
+
+    # Send the nvim command with all arguments to the 'nvim' session
+    tmux send-keys -t nvim "nvim $*" C-m
+
+    # Attach to the 'nvim' session
+    tmux attach-session -t nvim
+}

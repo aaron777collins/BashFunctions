@@ -34,5 +34,5 @@ tmux() {
     fi
 
     # Start or attach to a tmux session named 'main'
-    wsl -d "$DEFAULT_WSL_DISTRO" -e tmux new-session -A -s main
+    wsl -d "$DEFAULT_WSL_DISTRO" -e tmux "$@"
 }

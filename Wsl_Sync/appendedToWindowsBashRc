@@ -1,2 +1,58 @@
-# Leave at bottom (.bashscripts at ~/.bashrc is synced with wsl)
+export DEFAULT_WSL_DISTRO="Ubuntu"
+
+
+# Staying in here since we don't want to sync this with wsl
+tmux() {
+    # DEFAULT DISTRO COLORS
+    YELLOW='\033[1;33m' # Yellow
+    GREEN='\033[0;32m' # Green
+    GREY='\033[0;37m' # Grey
+    NC='\033[0m' # No Color
+
+    # CHECK IF DEFAULT_WSL_DISTRO IS SET
+    if [[ -z "$DEFAULT_WSL_DISTRO" ]]; then
+        echo "DEFAULT_WSL_DISTRO is not set."
+        # Have them set it using fzf and then export it
+        local distro
+        distro=$(wsl --list --quiet | fzf --height 70% --reverse)
+        if [[ -n "$distro" ]]; then
+            export DEFAULT_WSL_DISTRO="$distro"
+            # Note this is not permanent, you will need to add it to your .bashrc or .zshrc
+            # TELLING THE USER IN YELLOW TEXT
+            echo -e "${YELLOW}DEFAULT_WSL_DISTRO has been set to $distro${NC}"
+            echo "You will need to add this to your .bashrc or .zshrc to make it permanent."
+            echo "In your .bashrc or .zshrc, add the following line:"
+            echo -e "${GREEN}export DEFAULT_WSL_DISTRO=\"$distro\"${NC}"
+        else
+            echo "No distro selected."
+            return
+        fi
+    fi
+
+    # Check if tmux is installed in WSL distro
+    if ! wsl -d "$DEFAULT_WSL_DISTRO" -e tmux -V &> /dev/null; then
+        echo "tmux is not installed in $DEFAULT_WSL_DISTRO."
+        return
+    fi
+
+    # Start or attach to a tmux session named 'main'
+    wsl -d "$DEFAULT_WSL_DISTRO" -e tmux "$@"
+}
+
+nvim() {
+    # Check if a tmux session named 'nvim' exists, if not, create it.
+    if ! tmux has-session -t nvim 2>/dev/null; then
+        tmux new-session -d -s nvim
+    fi
+
+    # Send the nvim command with all arguments to the 'nvim' session
+    tmux send-keys -t nvim "nvim $*" C-m
+
+    # Attach to the 'nvim' session
+    tmux attach-session -t nvim
+}
+
+alias gs="git status"
+
+# Leave at bottom (.bashscripts is synced with wsl)
 if [ -f ~/.bashscripts ]; then . ~/.bashscripts; fi
