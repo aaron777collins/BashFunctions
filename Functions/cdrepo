@@ -26,8 +26,7 @@ function ridersln() {
 
 # Combines the gwe git pull --rebase and cdt moab refresh commands to update the current workspace and refresh the MOAB
 function prepworkspace() {
-    gwe git pull --rebase
-    cdt moab refresh
+    gwe git pull --rebase && cdt moab refresh
 }
 
 # Combines the cdw and ridersln functions to cd into the selected workspace and open it in Rider
