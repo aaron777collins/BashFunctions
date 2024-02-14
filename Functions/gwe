@@ -1,4 +1,4 @@
 # Used for running gradle commands on all repos (appends all arguments after.. kinda like an alias). Works without Windows Terminal too. Note: gw is gradlew so you may need to adjust this
 function gwe() {
-    gw :exec --console=rich --cmd="$*"
+    gw --console=rich :exec --cmd="$*"
 }
