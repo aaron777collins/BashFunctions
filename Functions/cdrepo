@@ -29,6 +29,13 @@ function prepworkspace() {
     gwe git pull --rebase && cdt moab refresh
 }
 
+# Combines the cdw and prepworkspace functions to cd into the selected workspace and update it
+function cdwprep() {
+    cdw && prepworkspace
+}
+
+alias cdp="cdwprep"
+
 # Combines the cdw and ridersln functions to cd into the selected workspace and open it in Rider
 function cdwridersln() {
     # If --prep is passed as an argument, run the prepworkspace function before opening the solution in Rider
