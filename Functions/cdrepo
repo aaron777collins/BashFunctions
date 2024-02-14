@@ -5,3 +5,45 @@ function cdrepo() {
         cd "$repo" || return
     fi
 }
+
+# Useful Optional Functions (you may need to edit the rider commands, etc
+
+# Opens the current folder in Rider if a solution file is found
+function ridersln() {
+    local folder_name=$(basename "$(pwd)")
+    local sln_file="${folder_name}.netcore.sln"
+    if [[ ! -f "$sln_file" ]]; then
+        echo "Solution file not found: $sln_file"
+        return 1
+    fi
+
+    # Specify the path to Rider executable
+    local rider_path="/c/Users/a.collins/AppData/Local/Programs/Rider/bin/rider64.exe"
+
+    # Open the solution file in Rider
+    "$rider_path" "$sln_file" &
+}
+
+# Combines the gwe git pull --rebase and cdt moab refresh commands to update the current workspace and refresh the MOAB
+function prepworkspace() {
+    gwe git pull --rebase
+    cdt moab refresh
+}
+
+# Combines the cdw and ridersln functions to cd into the selected workspace and open it in Rider
+function cdwridersln() {
+    # If --prep is passed as an argument, run the prepworkspace function before opening the solution in Rider
+    if [[ "$1" == "--prep" ]]; then
+        shift
+        cdw && prepworkspace && ridersln
+        return
+    fi
+    cdw && ridersln
+}
+
+# Combines the cdw, prepworkspace and openrd functions to cd into the selected workspace and open it in Rider
+function cdwprepridersln() {
+    cdwridersln --prep
+}
+
+alias cprs="cdwprepridersln"
