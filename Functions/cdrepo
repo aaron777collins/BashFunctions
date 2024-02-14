@@ -34,7 +34,7 @@ function cdwprep() {
     cdw && prepworkspace
 }
 
-alias cdp="cdwprep"
+alias cdwp="cdwprep"
 
 # Combines the cdw and ridersln functions to cd into the selected workspace and open it in Rider
 function cdwridersln() {
