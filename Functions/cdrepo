@@ -21,12 +21,14 @@ alias cdr="cdrepo"
 alias glc="GetLatestCommit"
 
 # Finds one or more repos and lets you open them all in git extensions
-function openrepo() {
+function openrepos() {
     local repos=$(find . -type d -name ".git" | sed 's|/\.git$||' | fzf --height 70% --multi --reverse)
     if [[ -n "$repos" ]]; then
         gitextensions "$repos" &
     fi
 }
+
+alias grepos="openrepos"
 
 # Lets you cd into any workspaces that are in sub-folders (be careful not to use this in your C drive or somewhere massive)
 function cdw() {
