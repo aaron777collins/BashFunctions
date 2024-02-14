@@ -1,12 +1,40 @@
-# Lets you cd into any repos that are in sub-folders (be careful not to use this in your C drive or somewhere massive) (relies on fzf)
-function cdrepo() {
+# Finds a repo in all sub-folders and lets you select it with fzf
+function findrepo() {
     local repo=$(find . -type d -name ".git" | sed 's|/\.git$||' | fzf --height 70% --reverse)
+    if [[ -n "$repo" ]]; then
+        echo "$repo"
+    fi
+}
+
+alias frepo="findrepo"
+
+# Lets you cd into any repos that are in sub-folders (be careful not to use this in your C drive or somewhere massive)
+function cdrepo() {
+    local repo=$(findrepo)
     if [[ -n "$repo" ]]; then
         cd "$repo" || return
     fi
 }
 
-# Useful Optional Functions (you may need to edit the rider commands, etc
+alias cdr="cdrepo"
+
+alias glc="GetLatestCommit"
+
+# Finds one or more repos and lets you open them all in git extensions
+function openrepo() {
+    local repos=$(find . -type d -name ".git" | sed 's|/\.git$||' | fzf --height 70% --multi --reverse)
+    if [[ -n "$repos" ]]; then
+        gitextensions "$repos" &
+    fi
+}
+
+# Lets you cd into any workspaces that are in sub-folders (be careful not to use this in your C drive or somewhere massive)
+function cdw() {
+    local repo=$(find . -type d -name ".git" | sed 's|/\.git$||' | sed 's|/\([^/]*\)/\([^/]*\)$||' | sort -u | fzf --height 70% --reverse)
+    if [[ -n "$repo" ]]; then
+        cd "$repo" || return
+    fi
+}
 
 # Opens the current folder in Rider if a solution file is found
 function ridersln() {
