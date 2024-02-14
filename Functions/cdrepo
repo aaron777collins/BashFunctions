@@ -24,7 +24,10 @@ alias glc="GetLatestCommit"
 function openrepos() {
     local repos=$(find . -type d -name ".git" | sed 's|/\.git$||' | fzf --height 70% --multi --reverse)
     if [[ -n "$repos" ]]; then
-        gitextensions "$repos" &
+        # for each repo, open it in git extensions
+        for repo in $repos; do
+            gitextensions "$repo" &
+        done
     fi
 }
 
