@@ -1,0 +1,77 @@
+# File Lookup System
+
+# Declare an associative array for storing generic name to file path mappings
+declare -A file_map
+
+# Path where notes are stored
+notes_path="/c/Users/a.collins/OneDrive - CRITEO/Desktop/Notes"
+
+# Function to add or modify file path mappings
+add_file_mapping() {
+    local name=$1
+    local path=$2
+    file_map["$name"]="$path"
+}
+
+# Function to automatically register all files in the notes directory
+register_all_files() {
+    # Use find for robust handling of file names with spaces and special characters
+    while IFS= read -r -d $'\0' file; do
+        local name="${file##*/}"  # Extract just the file name
+        name="${name%.*}"         # Remove file extension
+        add_file_mapping "$name" "$file"
+    done < <(find "$notes_path" -type f -print0)
+}
+
+# Function to display the contents of a file given a generic name
+show_file_contents() {
+    local name=$1
+    local path="${file_map["$name"]}"
+
+    # if neither, name nor path is provided, list off currently registered files and
+    # explain how to map a new one (along with recommending adding it to the bashrc)
+    if [[ -z "$name" && -z "$path" ]]; then
+        echo "No file name provided. Registered files:"
+        for key in "${!file_map[@]}"; do
+            echo "$key"
+        done
+        echo "To map a new file, use 'add_file_mapping <name> <path>'"
+        echo "For example, 'add_file_mapping my_notes $notes_path/my_notes.txt'"
+        echo "Consider adding the mapping to your bashrc for easy access."
+        return 1
+    fi
+
+    if [[ -z "$name" ]]; then
+        echo "Error: No file name provided"
+        return 1
+    fi
+
+    if [[ -z "$path" ]]; then
+        echo "Error: No file path mapped for '$name'"
+        return 1
+    fi
+
+    if [[ ! -f "$path" ]]; then
+        echo "Error: No file found at mapped path '$path'"
+        return 1
+    fi
+
+    cat "$path"
+}
+
+# Example usage: Automatically registering files
+register_all_files
+
+alias sfc="show_file_contents"
+
+# Completion function for show_file_contents
+_show_file_contents_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local keys=$(echo "${!file_map[@]}")
+    COMPREPLY=($(compgen -W "$keys" -- "$cur"))
+}
+
+complete -F _show_file_contents_completion show_file_contents
+complete -F _show_file_contents_completion sfc
+
+# File Lookup System END
