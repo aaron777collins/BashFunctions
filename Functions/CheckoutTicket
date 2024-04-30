@@ -1,0 +1,75 @@
+function CheckoutTicket() {
+    GERRIT_USERNAME="a.collins"  # Update with your actual username
+    GERRIT_SERVER="https://review.crto.in"  # Update with your Gerrit server URL
+
+    declare -a commit_entries
+    declare -A commit_details
+
+    # Step 1: Find all repositories and collect commits with ticket numbers
+    while IFS= read -r repo; do
+        pushd "$repo" > /dev/null || continue
+
+        # Get current and parent directory names to form a project-like string
+        CURRENT_DIR=$(basename "$PWD")
+        PARENT_DIR=$(basename "$(dirname "$PWD")")
+        PROJECT_FILTER="${PARENT_DIR}/${CURRENT_DIR}"
+
+        CHANGES_JSON=$(curl -s "${GERRIT_SERVER}/changes/?q=is:open+owner:${GERRIT_USERNAME}&o=CURRENT_REVISION" | sed '1d')
+        echo "$CHANGES_JSON" | jq -c --arg project_filter "$PROJECT_FILTER" '.[] | select(.project | contains($project_filter))' | while IFS= read -r change; do
+            TICKET=$(echo "$change" | jq -r '.subject' | grep -oE '[A-Z]+-[0-9]+')
+            SUBJECT=$(echo "$change" | jq -r '.subject')
+            REF=$(echo "$change" | jq -r '.revisions | to_entries[0].value.ref')
+            ENTRY="[$TICKET] - $SUBJECT ($REF)"
+            commit_entries+=("$ENTRY")
+            commit_details["$ENTRY"]="$repo $REF"
+        done
+
+        popd > /dev/null || continue
+    done < <(find . -type d -name ".git" | sed 's|/\.git$||')
+
+    # Step 2: Let the user select a commit with context
+    SELECTED_ENTRY=$(printf "%s\n" "${commit_entries[@]}" | fzf --height 40% --reverse)
+
+    if [[ -z "$SELECTED_ENTRY" ]]; then
+        echo "No entry selected. Exiting."
+        return
+    fi
+
+    # Extract the revision info from the selected entry
+    SELECTED_REF=$(echo "$SELECTED_ENTRY" | awk -F '(' '{print $NF}' | tr -d ')')
+
+    # Retrieve the repo path and ref from the selected entry
+    REPO_PATH=$(echo "${commit_details["$SELECTED_ENTRY"]}" | awk '{print $1}')
+    REF=$(echo "${commit_details["$SELECTED_ENTRY"]}" | awk '{print $2}')
+
+    pushd "$REPO_PATH" > /dev/null || continue
+
+    # Extract the ticket number from the selected entry, assuming it is the subject
+    SELECTED_TICKET=$(echo "$SELECTED_ENTRY" | awk -F '[][-]' '{print $2}')
+
+    BRANCH_NAME="feature/${SELECTED_TICKET}"
+
+    # Step 3: Checkout the selected ticket in the repository
+    echo "Processing [$SELECTED_TICKET] in repository $REPO_PATH..."
+
+    # Check if the branch already exists
+    if git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+        echo "Branch $BRANCH_NAME already exists. Checking out and rebasing."
+        git checkout "$BRANCH_NAME"
+        git fetch "${GERRIT_SERVER}" "${REF}" && git rebase FETCH_HEAD
+    else
+        echo "Creating and checking out new branch: $BRANCH_NAME."
+        git fetch "${GERRIT_SERVER}" "${REF}" && git checkout -b "$BRANCH_NAME" FETCH_HEAD
+    fi
+
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to process [$SELECTED_TICKET] in repository $REPO_PATH."
+    else
+        echo "Successfully processed [$SELECTED_TICKET] in repository $REPO_PATH."
+    fi
+
+    popd > /dev/null || continue
+}
+
+
+alias ct="CheckoutTicket"
