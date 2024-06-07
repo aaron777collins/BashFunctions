@@ -103,3 +103,26 @@ function runonrepos() {
 
 export -f runonrepos
 alias ror="runonrepos"
+
+# Completion function for ror
+_ror_completion() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="--reselect"
+
+    # Options completion
+    if [[ ${cur} == -* ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    # Command completion
+    local commands=$(compgen -c)  # Get a list of all available commands
+    COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
+    return 0
+}
+
+# Register the completion function for ror
+complete -F _ror_completion ror
