@@ -1,0 +1,48 @@
+function install_dependencies() {
+    # Install scoop for package management
+    # OPEN POWERSHELL AS ADMIN AND RUN
+    # Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+    # Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+
+    # Check if scoop is installed
+    if ! command -v scoop &> /dev/null; then
+        print_yellow "scoop is not installed. Installing..."
+        # Install scoop
+        # Create a temporary PowerShell script file
+        TEMP_SCRIPT=$(mktemp /tmp/ps_script.XXXXXX.ps1)
+
+        # Write the PowerShell commands to the script file
+        cat <<EOF > $TEMP_SCRIPT
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+EOF
+
+        # Run the PowerShell script as an administrator
+        powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File $TEMP_SCRIPT' -Verb RunAs"
+
+        # Clean up the temporary script file
+        rm $TEMP_SCRIPT
+
+    fi
+
+    # We are going to check if the dependencies installed and install them if they are not
+    # fzf
+    if ! command -v fzf &> /dev/null; then
+        print_yellow "fzf is not installed. Installing..."
+        scoop install fzf
+    fi
+
+    # jq
+    if ! command -v jq &> /dev/null; then
+        print_yellow "jq is not installed. Installing..."
+        scoop install jq
+    fi
+
+    # jid
+    if ! command -v jid &> /dev/null; then
+        print_yellow "jid is not installed. Installing..."
+        scoop install jid
+    fi
+
+    print_green "All dependencies are installed."
+}
