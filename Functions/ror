@@ -118,11 +118,46 @@ _ror_completion() {
         return 0
     fi
 
-    # Command completion
-    local commands=$(compgen -c)  # Get a list of all available commands
-    COMPREPLY=( $(compgen -W "${commands}" -- ${cur}) )
-    return 0
+    # Subcommand completion for the first argument
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        local subcommands="orepos glc ror rac sfc cdrepo cdw cdwprep cdwridersln cdwprepridersln cprs fzf grep jq jid ridersln prepworkspace openrepos openrepo findrepo findrepos cdwprep cdwp cdwridersln cdwprepridersln cprs CheckoutTicket nunitfixes RefreshAndCheckout runonrepos git gitextensions gw gwe cdt"
+        COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+        return 0
+    fi
+
+    # Dynamic argument completion for the command given as the first argument
+    if [[ ${COMP_CWORD} -ge 2 ]]; then
+        local cmd="${COMP_WORDS[1]}"
+        
+        # Check if there's a completion function for the command
+        if type "_ror_${cmd}_completion" &>/dev/null; then
+            "_ror_${cmd}_completion"
+        else
+            # Fallback to generic command completion if no specific completion function is found
+            COMPREPLY=( $(compgen -A file -- ${cur}) )
+        fi
+        
+        return 0
+    fi
 }
 
-# Register the completion function for ror
+# Specific completion for ror git subcommands
+_ror_git_completion() {
+    local cur prev subcommands
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    subcommands="add branch checkout commit diff fetch init log merge pull push rebase reset status"
+
+    if [[ ${COMP_CWORD} -eq 2 ]]; then
+        COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+        return 0
+    elif [[ ${COMP_CWORD} -eq 3 ]]; then
+        if [[ ${prev} == "checkout" ]]; then
+            COMPREPLY=( $(compgen -A file -- ${cur}) )
+            return 0
+        fi
+    fi
+}
+
+# Register the completion function
 complete -F _ror_completion ror
