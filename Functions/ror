@@ -159,5 +159,45 @@ _ror_git_completion() {
     fi
 }
 
+_ror_cdt_completion() {
+    local cur prev
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    # common uses:
+    # cdt moab refresh
+    # cdt moab init csharp <string>
+    # cdt moab <the following commands
+    #      list           Produce a list of available virtual trunks
+    #   repositories   Produce a list of available repositories
+    #   init           Init a MOAB workspace
+    #   checkout       Checkout new repositories into the workspace
+    #   ide            Prepare the workspace for IDE usage
+    #   assemble       Assemble (compile, package) projects
+    #   check          Check (test, lint) projects
+    #   refresh        Refresh the workspace
+    #   status         Run git status in all repositories of the workspace
+    #   search-review  Find the first moab in which a review is processed
+    #   changelog      Display the change log for the latest moab for a repo
+
+    if [[ ${COMP_CWORD} -eq 2 ]]; then
+        local subcommands="moab"
+        COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+        return 0
+    elif [[ ${COMP_CWORD} -eq 3 ]]; then
+        if [[ ${prev} == "moab" ]]; then
+            local subcommands="list repositories init checkout ide assemble check refresh status search-review changelog"
+            COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            return 0
+        fi
+    elif [[ ${COMP_CWORD} -eq 4 ]]; then
+        if [[ ${prev} == "init" ]]; then
+            local subcommands="csharp"
+            COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
+            return 0
+        fi
+    fi
+}
+
 # Register the completion function
 complete -F _ror_completion ror
