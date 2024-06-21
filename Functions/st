@@ -2,7 +2,7 @@
 ### RELIES ON ror and cdt
 
 function start_ticket() {
-    GREY="\033[1;30m"
+    WHITE="\033[1;37m"
     YELLOW="\033[1;33m"
     GREEN="\033[1;32m"
     BLUE="\033[1;34m"
@@ -19,8 +19,8 @@ function start_ticket() {
     ticket=$1
     rest_of_args="${@:2}"
 
-    # grey for the important parts
-    print_blue "Starting ticket: ${GREY}$ticket${BLUE} with message: ${GREY}$rest_of_args"
+    # white for the important parts
+    print_blue "Starting ticket: ${WHITE}$ticket${BLUE} with message: ${WHITE}$rest_of_args"
     
     # Logging whats happening in nice colors
     print_blue "Stashing all changes"
@@ -42,7 +42,7 @@ function start_ticket() {
     ror "git commit --allow-empty -m \"[$ticket] $rest_of_args\""
     print_blue "Pushing the new branch to the remote as a draft"
     ror "git draft"
-    print_green "Ticket ${GREY}$ticket${GREEN} started with message: ${GREY}$rest_of_args"
+    print_green "Ticket ${WHITE}$ticket${GREEN} started with message: ${WHITE}$rest_of_args"
 }
 
 export -f start_ticket
