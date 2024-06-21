@@ -1,0 +1,51 @@
+######### start_ticket (st) <ticket> <message> #########
+### RELIES ON ror and cdt
+
+function start_ticket() {
+    GREY="\033[1;30m"
+    YELLOW="\033[1;33m"
+    GREEN="\033[1;32m"
+    BLUE="\033[1;34m"
+    function print_yellow() {
+        echo -e "\033[1;33m$1\033[0m"
+    }
+    function print_green() {
+        echo -e "\033[1;32m$1\033[0m"
+    }
+    function print_blue() {
+        echo -e "\033[1;34m$1\033[0m"
+    }
+
+    ticket=$1
+    rest_of_args="${@:2}"
+
+    # grey for the important parts
+    print_blue "Starting ticket: ${GREY}$ticket${BLUE} with message: ${GREY}$rest_of_args"
+    
+    # Logging whats happening in nice colors
+    print_blue "Stashing all changes"
+    ror --reselect "git stash"
+    print_blue "Checking out master"
+    ror "git checkout master"
+    print_blue "Pulling the latest changes"
+    ror "git pull --rebase"
+    print_blue "Restoring the workspace"
+    ror "git restore ."
+    print_blue "Refreshing MOABs"
+    cdt moab refresh
+    print_blue "Restoring the workspace again just in case"
+    ror git restore .
+    print_blue "Checking out the new ticket as a feature branch"
+    ror "git checkout -b feature/$ticket FETCH_HEAD"
+    print_blue "Committing the empty branch to allow for tracking"
+    # the commit should be [$1] (the rest of the arguments)
+    ror "git commit --allow-empty -m \"[$ticket] $rest_of_args\""
+    print_blue "Pushing the new branch to the remote as a draft"
+    ror "git draft"
+    print_green "Ticket ${GREY}$ticket${GREEN} started with message: ${GREY}$rest_of_args"
+}
+
+export -f start_ticket
+alias st="start_ticket"
+
+## END OF start_ticket (st)
