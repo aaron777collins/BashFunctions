@@ -1,3 +1,5 @@
+## START of rac [--reselect] <commit message>
+
 # refreshes moabs and Checks out commits on specified repos with the specified texts
 function RefreshAndCheckout() {
     (
@@ -65,8 +67,8 @@ function RefreshAndCheckout() {
         # Gets your latest commits and lets you check them out (someone else wrote this mostly)
         function GetLatestCommit() {
             # Set your Gerrit username and Gerrit server URL
-            GERRIT_USERNAME="USERNAME" # Update with your actual username
-            GERRIT_SERVER="GERRIT" # Update with your Gerrit server URL
+            GERRIT_USERNAME="your_username" # Update with your actual username
+            GERRIT_SERVER="https://your.gerrit.server" # Update with your Gerrit server URL
 
             # Get current and parent directory names to form a project-like string
             CURRENT_DIR=$(basename "$PWD")
@@ -107,7 +109,7 @@ function RefreshAndCheckout() {
                 PROJECT=$(echo "${SELECTED_COMMIT}" | awk '{print $2}' | tr -d '[]')
                 REF=$(echo "${SELECTED_COMMIT}" | awk '{print $NF}')
                 SUBJECT=$(echo "${SELECTED_COMMIT}" | awk '{$1=$1; print $0}' | cut -f3- -d$'\t')
-                GIT_COMMAND="git fetch ssh://${GERRIT_USERNAME}@review.crto.in:29418/${PROJECT} ${REF}"
+                GIT_COMMAND="git fetch ssh://${GERRIT_USERNAME}@your.gerrit.server:29418/${PROJECT} ${REF}"
                 echo "Executing: ${GIT_COMMAND}"
                 eval "${GIT_COMMAND}"
                 TICKET=$(echo "${SUBJECT}" | grep -oE '[A-Z]+-[0-9]+')
@@ -160,6 +162,7 @@ function RefreshAndCheckout() {
             print_yellow "Checking out master and restoring the workspace in all repos."
             gwe git checkout master
             gwe git restore .
+            gwe git clean -fd
 
             print_yellow "Refreshing MOABs"
             cdt moab refresh
@@ -183,3 +186,26 @@ function RefreshAndCheckout() {
 
 export -f RefreshAndCheckout
 alias rac="RefreshAndCheckout"
+
+# completion function for rac [--reselect] <commit message>
+_rac_completion() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="--reselect"
+
+    # Should complete the --reselect option if its the 1st argument
+    if [[ ${cur} == -* ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    # Otherwise, don't complete anything
+    return 0
+}
+
+complete -F _rac_completion RefreshAndCheckout
+complete -F _rac_completion rac
+
+# END OF rac
