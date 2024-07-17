@@ -106,5 +106,6 @@ _start_ticket_completion() {
 
 # completion for function and alias
 complete -F _start_ticket_completion start_ticket
+complete -F _start_ticket_completion st
 
 ## END OF start_ticket (st)
