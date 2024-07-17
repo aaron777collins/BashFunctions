@@ -1,4 +1,4 @@
-######### start_ticket (st) <ticket> <message> #########
+######### start_ticket (st) [--no-space] <ticket> <message> #########
 ### RELIES ON ror and cdt
 
 function start_ticket() {
@@ -6,19 +6,45 @@ function start_ticket() {
     YELLOW="\033[1;33m"
     GREEN="\033[1;32m"
     BLUE="\033[1;34m"
+    
     function print_yellow() {
         echo -e "\033[1;33m$1\033[0m"
     }
+    
     function print_green() {
         echo -e "\033[1;32m$1\033[0m"
     }
+    
     function print_blue() {
         echo -e "\033[1;34m$1\033[0m"
     }
+    
+    function print_help() {
+        echo -e "${YELLOW}Usage: start_ticket [--no-space] <ticket> <message>${WHITE}"
+        echo -e "${YELLOW}Options:${WHITE}"
+        echo -e "${YELLOW}  --no-space    Do not put a space between [ticket] and message${WHITE}"
+    }
+    
+    if [ $# -eq 0 ]; then
+        print_help
+        return
+    fi
+    
+    no_space=false
 
+    if [ "$1" == "--no-space" ]; then
+        no_space=true
+        shift
+    fi
+    
+    if [ $# -lt 2 ]; then
+        print_help
+        return
+    fi
+    
     ticket=$1
     rest_of_args="${@:2}"
-
+    
     # white for the important parts
     print_blue "Starting ticket: ${WHITE}$ticket${BLUE} with message: ${WHITE}$rest_of_args"
     
@@ -31,15 +57,26 @@ function start_ticket() {
     ror "git pull --rebase"
     print_blue "Restoring the workspace"
     ror "git restore ."
+    print_blue "Cleaning untracked files"
+    ror "git clean -fd"
     print_blue "Refreshing MOABs"
     cdt moab refresh
     print_blue "Restoring the workspace again just in case"
-    ror git restore .
+    ror "git restore ."
+    print_blue "Cleaning untracked files again just in case"
+    ror "git clean -fd"
     print_blue "Checking out the new ticket as a feature branch"
     ror "git checkout -b feature/$ticket FETCH_HEAD"
     print_blue "Committing the empty branch to allow for tracking"
-    # the commit should be [$1] (the rest of the arguments)
-    ror "git commit --allow-empty -m \"[$ticket] $rest_of_args\""
+    
+    # the commit message handling --no-space option
+    if [ "$no_space" = true ]; then
+        commit_message="[$ticket]$rest_of_args"
+    else
+        commit_message="[$ticket] $rest_of_args"
+    fi
+    
+    ror "git commit --allow-empty -m \"$commit_message\""
     print_blue "Pushing the new branch to the remote as a draft"
     ror "git draft"
     print_green "Ticket ${WHITE}$ticket${GREEN} started with message: ${WHITE}$rest_of_args"
@@ -47,5 +84,27 @@ function start_ticket() {
 
 export -f start_ticket
 alias st="start_ticket"
+
+# Auto-complete this command
+_start_ticket_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+    local opts="--no-space"
+
+    # first argument should be one of the options
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+        return 0
+    fi
+
+    # no more arguments after the first
+    if [[ ${COMP_CWORD} -gt 1 ]]; then
+        COMPREPLY=($(compgen -W "" -- "$cur"))
+        return 0
+    fi
+}
+
+# completion for function and alias
+complete -F _start_ticket_completion start_ticket
 
 ## END OF start_ticket (st)
