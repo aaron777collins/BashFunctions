@@ -172,7 +172,7 @@ function RefreshAndCheckout() {
                 print_yellow "\nChecking out commits with the text ${GREY}$*${YELLOW} in repo: ${GREY}$repo${YELLOW}"
                 (
                     cd "$repo" || exit
-                    glc "$@"
+                    GetLatestCommit "$@"
                     cd "$original_dir" || exit
                 )
             done <<< "$repos"
