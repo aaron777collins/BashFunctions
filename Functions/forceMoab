@@ -1,0 +1,65 @@
+## forceMoab (fm) <moab version> [--prepIde]
+
+function forceMoab() {
+    print_yellow() {
+        echo -e "\033[1;33m$1\033[0m"
+    }
+
+    # No params, show help
+    if [[ -z "$1" ]]; then
+        echo "fm: Force the MOAB to a specific version."
+        echo "Usage: fm <moab version> [--prepIde]"
+        echo "  <moab version> The MOAB version to force to."
+        echo "  --prepIde      Prepares the workspace for IDE usage after forcing the MOAB."
+        return
+    fi
+
+    # Get the MOAB version
+    local moab_version="$1"
+
+    print_yellow "Forcing MOAB to version: $moab_version"
+    # Use gw refreshMoab --forceVersion=<moab_version> to force the MOAB
+    gw refreshMoab --forceVersion="$moab_version"
+
+    # Check if --prepIde flag is provided
+    if [[ "$2" == "--prepIde" ]]; then
+        print_yellow "Preparing the workspace for IDE usage."
+        cdt moab ide
+    fi
+}
+
+export -f forceMoab
+alias fm="forceMoab"
+
+# Auto-complete this command
+_forceMoab_completion() {
+    # Basically, it should be fm <moab version> [--prepIde]
+
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+    local opts="--prepIde"
+
+    # first argument should be a moab version (fm <some number>)
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "" -- "$cur"))
+        return 0
+    fi
+
+    # second argument should be --prepIde
+    if [[ ${COMP_CWORD} -eq 2 ]]; then
+        COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+        return 0
+    fi
+
+    # no more arguments after the second
+    if [[ ${COMP_CWORD} -gt 2 ]]; then
+        COMPREPLY=($(compgen -W "" -- "$cur"))
+        return 0
+    fi
+}
+
+# completion for function and alias
+complete -F _forceMoab_completion forceMoab
+complete -F _forceMoab_completion fm
+
+## end of forceMoab (fm)
