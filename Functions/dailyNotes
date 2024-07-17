@@ -1,0 +1,86 @@
+## Daily Notes (DN) ####
+# Usage: dn -> shows help
+# dn -a[d] <message> -> appends the message onto the daily notes file (formatted as daily-notes-YYYY-MM-DD.txt) [-d is optional and adds the hour and minute to the message]
+# dn -o -> opens the daily notes file for today in vscode
+# dn -o <date> -> opens the daily notes file for the specified date in vscode
+function dailyNotes() {
+    # Get the current date
+    local current_date=$(date +%Y-%m-%d)
+    local notes_path="/c/Users/a.collins/OneDrive - CRITEO/Desktop/Notes"
+    local notes_file="${notes_path}/daily-notes-${current_date}.txt"
+
+    # No arguments, show help
+    if [[ -z "$1" ]]; then
+        echo "dn: Daily notes management."
+        echo "Usage: dn [-a[d] <message>] [-o [<date>]]"
+        echo "  -a[d] <message>  Append the message to the daily notes file."
+        echo "                   -d adds the hour and minute to the message."
+        echo "  -o               Open the daily notes file for today in VS Code."
+        echo "  -o <date>        Open the daily notes file for the specified date in VS Code."
+        return
+    fi
+
+    # Append the message to the daily notes file (accounts for the -d option)
+    if [[ "$1" == "-a" || "$1" == "-ad" ]]; then
+        local message="$2"
+        if [[ "$1" == "-ad" ]]; then
+            message="[$(date +%H:%M)] $message"
+        fi
+        echo "$message" >> "$notes_file"
+        # shift 2 to remove the -a[d] and the message
+    fi
+
+    # Open the daily notes file for today in VS Code
+    if [[ "$1" == "-o" && -z "$2" ]]; then
+        code "$notes_file"
+        return
+    fi
+
+    # Open the daily notes file for the specified date in VS Code
+    if [[ "$1" == "-o" && -n "$2" ]]; then
+        local notes_file="${notes_path}/daily-notes-${2}.txt"
+        code "$notes_file"
+        return
+    fi
+}
+
+export -f dailyNotes
+alias dn="dailyNotes"
+
+# Auto-complete dailyNotes command
+_dailyNotes_completion() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local prev=${COMP_WORDS[COMP_CWORD-1]}
+    local opts="-a -ad -o"
+    local lastopts="-o"
+
+    # first argument should be one of the options
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "$opts" -- "$cur"))
+        return 0
+    fi
+
+    # second argument should be the message
+    if [[ ${COMP_CWORD} -eq 2 ]]; then
+        COMPREPLY=($(compgen -W "" -- "$cur"))
+        return 0
+    fi
+
+    # third argument should be a lastopts
+    if [[ ${COMP_CWORD} -eq 3 ]]; then
+        COMPREPLY=($(compgen -W "$lastopts" -- "$cur"))
+        return 0
+    fi
+
+    # fourth argument should be the date (suggest todays date)
+    if [[ ${COMP_CWORD} -eq 4 ]]; then
+        COMPREPLY=($(compgen -W "$(date +%Y-%m-%d)" -- "$cur"))
+        return 0
+    fi
+}
+
+# completion for function and alias
+complete -F _dailyNotes_completion dailyNotes
+complete -F _dailyNotes_completion dn
+
+## end of dailyNotes (dn)
