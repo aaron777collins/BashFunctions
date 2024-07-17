@@ -200,4 +200,5 @@ _ror_cdt_completion() {
 }
 
 # Register the completion function
+complete -F _ror_completion runonrepos
 complete -F _ror_completion ror
