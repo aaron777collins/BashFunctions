@@ -120,7 +120,7 @@ _ror_completion() {
 
     # Subcommand completion for the first argument
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-        local subcommands="orepo glc ror rac sfc cdrepo cdw cdwprep cdwridersln cdwprepridersln cprs fzf grep jq jid ridersln prepworkspace openrepos openrepo findrepo findrepos cdwprep cdwp cdwridersln cdwprepridersln cprs CheckoutTicket nunitfixes RefreshAndCheckout runonrepos git gitextensions gw gwe cdt"
+        local subcommands="orepo glc ror rac sfc cdrepo cdw cdwprep cdwridersln cdwprepridersln cprs fzf grep jq jid ridersln prepworkspace openrepos openrepo findrepo findrepos cdwprep cdwp cdwridersln cdwprepridersln cprs nunitfixes RefreshAndCheckout runonrepos git gitextensions gw gwe cdt"
         COMPREPLY=( $(compgen -W "${subcommands}" -- ${cur}) )
         return 0
     fi
