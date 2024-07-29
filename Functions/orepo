@@ -1,0 +1,47 @@
+# Finds one or more repos and lets you open them all in git extensions
+function openrepos() {
+    # Default depth is 3
+    local depth=3
+
+    # Check if --depth flag is provided
+    if [[ "$1" == "--depth" && -n "$2" && "$2" =~ ^[0-9]+$ ]]; then
+        depth="$2"
+        shift 2
+    fi
+
+    local repos=$(find . -maxdepth "$depth" -type d -name ".git" | sed 's|/\.git$||' | fzf --height 70% --multi --reverse)
+    if [[ -n "$repos" ]]; then
+        # for each repo, open it in git extensions
+        for repo in $repos; do
+            gitextensions "$repo" &
+        done
+    fi
+}
+
+# Similar to openrepos except it opens the first repo in the list of repos it finds
+function openrepo() {
+    # Default depth is 3
+    local depth=3
+
+    # Check if --depth flag is provided
+    if [[ "$1" == "--depth" && -n "$2" && "$2" =~ ^[0-9]+$ ]]; then
+        depth="$2"
+        shift 2
+    fi
+
+    # rather than using fzf, we will just use the first repo found
+    local repo=$(find . -maxdepth "$depth" -type d -name ".git" | sed 's|/\.git$||' | head -n 1)
+
+    if [[ -n "$repo" ]]; then
+        gitextensions "$repo" &
+    fi
+}
+
+alias orepo="openrepo"
+export -f openrepo
+
+function grepos() {
+    openrepos "$@"
+}
+export -f openrepos
+export -f grepos
